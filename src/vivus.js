@@ -121,14 +121,14 @@ Vivus.prototype.setElement = function (element, options) {
     element = objElm;
   }
 
-  switch (element.constructor) {
-  case window.SVGSVGElement:
-  case window.SVGElement:
+  switch (element.constructor.name) {
+  case window.SVGSVGElement.name:
+  case window.SVGElement.name:
     this.el = element;
     this.isReady = true;
     break;
 
-  case window.HTMLObjectElement:
+  case window.HTMLObjectElement.name:
     // If we have to wait for it
     var onLoad, self;
 
