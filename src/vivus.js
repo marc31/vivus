@@ -113,12 +113,40 @@ Vivus.prototype.setElement = function (element, options) {
 
   // Create the object element if the property `file` exists in the options object
   if (options && options.file) {
-    var objElm = document.createElement('object');
-    objElm.setAttribute('type', 'image/svg+xml');
-    objElm.setAttribute('data', options.file);
-    objElm.setAttribute('built-by-vivus', 'true');
-    element.appendChild(objElm);
-    element = objElm;
+
+    // Check if file exist.
+    var checkFile = function(address, callBackCheckFile) {
+      var client = new XMLHttpRequest();
+      client.onload = function () {
+        if (this.status === 200) {
+          callBackCheckFile();
+          return true;
+        }
+        else {
+          console.log('file does not exist! status: ' + this.status);
+          return false;
+        }
+      };
+      client.open('HEAD', address);
+      try {
+        client.send();
+      }
+      catch (e) {
+        console.log('File is probably wrong :'+ e);
+        return false;
+      }
+    };
+
+    var insertSVG = function () {
+      var objElm = document.createElement('object');
+      objElm.setAttribute('type', 'image/svg+xml');
+      objElm.setAttribute('data', options.file);
+      objElm.setAttribute('built-by-vivus', 'true');
+      element.appendChild(objElm);
+      element = objElm;
+    };
+
+    checkFile(options.file, insertSVG);
   }
 
   switch (element.constructor.name) {
@@ -157,6 +185,15 @@ Vivus.prototype.setElement = function (element, options) {
     if (!onLoad()) {
       element.addEventListener('load', onLoad);
     }
+
+    onError = function (e) {
+      throw new Error('Vivus [constructor]: error on loading object');
+    };
+
+    if (!onError()) {
+      element.addEventListener('error', onError);
+    }
+
     break;
 
   default:
